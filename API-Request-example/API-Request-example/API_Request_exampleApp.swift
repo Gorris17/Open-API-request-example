@@ -11,13 +11,10 @@ import SwiftData
 @main
 struct API_Request_exampleApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        let schema = Schema([RecentTrackEntity.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -25,7 +22,7 @@ struct API_Request_exampleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SearchView()
         }
         .modelContainer(sharedModelContainer)
     }
