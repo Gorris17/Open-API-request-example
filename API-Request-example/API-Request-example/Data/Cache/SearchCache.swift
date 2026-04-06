@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 
 protocol SearchCacheProtocol {
     func get(for query: String) -> [Track]?
@@ -32,7 +31,7 @@ final class SearchCache: SearchCacheProtocol {
         let key = query.lowercased()
         guard let entry = store[key] else { return nil }
         guard entry.expiresAt > Date() else {
-            AppLogger.cache.debug("Cache entry expired for '\(key, privacy: .private)'")
+            AppLogger.debug("Cache entry expired for '\(key)'", .cache)
             store.removeValue(forKey: key)
             return nil
         }
@@ -51,7 +50,7 @@ final class SearchCache: SearchCacheProtocol {
         store = store.filter { $0.value.expiresAt > now }
         let removed = before - store.count
         if removed > 0 {
-            AppLogger.cache.info("Purged \(removed, privacy: .public) expired cache entries")
+            AppLogger.info("Purged \(removed) expired cache entries", .cache)
         }
     }
 }

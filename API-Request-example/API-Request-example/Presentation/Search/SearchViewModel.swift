@@ -33,24 +33,27 @@ final class SearchViewModel {
             return
         }
 
-        AppLogger.search.info("Search started: '\(self.searchText, privacy: .private)'")
-        isLoading = true
-        searchTask = Task {
+        searchTask = Task {  // isLoading set after debounce window
+            do { try await Task.sleep(for: .milliseconds(300)) }
+            catch { return }  // cancelled during debounce window
+
+            isLoading = true
             defer { isLoading = false }
+            AppLogger.info("Search started: '\(self.searchText)'", .search)
             do {
                 let results = try await searchUseCase.execute(query: searchText)
                 guard !Task.isCancelled else {
-                    AppLogger.search.debug("Search cancelled: '\(self.searchText, privacy: .private)'")
+                    AppLogger.debug("Search cancelled: '\(self.searchText)'", .search)
                     return
                 }
-                AppLogger.search.info("Search '\(self.searchText, privacy: .private)' → \(results.count, privacy: .public) results")
+                AppLogger.info("Search '\(self.searchText)' → \(results.count) results", .search)
                 tracks = results
             } catch {
                 guard !Task.isCancelled else {
-                    AppLogger.search.debug("Search cancelled: '\(self.searchText, privacy: .private)'")
+                    AppLogger.debug("Search cancelled: '\(self.searchText)'", .search)
                     return
                 }
-                AppLogger.search.error("Search '\(self.searchText, privacy: .private)' failed: \(error, privacy: .public)")
+                AppLogger.error("Search '\(self.searchText)' failed: \(error)", .search)
                 errorMessage = error.localizedDescription
             }
         }

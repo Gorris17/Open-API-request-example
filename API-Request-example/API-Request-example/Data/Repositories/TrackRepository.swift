@@ -18,17 +18,17 @@ final class TrackRepository: TrackRepositoryProtocol {
 
     func search(query: String) async throws -> [Track] {
         if let cached = cache.get(for: query) {
-            AppLogger.cache.debug("Cache hit for '\(query, privacy: .private)' → \(cached.count, privacy: .public) tracks")
+            AppLogger.debug("Cache hit for '\(query)' → \(cached.count) tracks", .cache)
             return cached
         }
 
-        AppLogger.cache.debug("Cache miss for '\(query, privacy: .private)', fetching from API")
+        AppLogger.debug("Cache miss for '\(query)', fetching from API", .cache)
         let response: SearchResponsePOSO = try await apiService.request(
             ITunesEndpoint.search(query: query)
         )
 
         let tracks = response.results.compactMap { $0.toDomain() }
-        AppLogger.cache.debug("Storing \(tracks.count, privacy: .public) tracks in cache for '\(query, privacy: .private)'")
+        AppLogger.debug("Storing \(tracks.count) tracks in cache for '\(query)'", .cache)
         cache.set(tracks, for: query)
         return tracks
     }

@@ -67,10 +67,10 @@ struct DetailView: View {
         )
         if let existing = try? modelContext.fetch(descriptor).first {
             existing.viewedAt = Date()
-            AppLogger.persistence.debug("Updated viewedAt for track \(id, privacy: .public)")
+            AppLogger.debug("Updated viewedAt for track \(id)", .persistence)
         } else {
             modelContext.insert(RecentTrackEntity(track: track))
-            AppLogger.persistence.info("Persisted new track \(id, privacy: .public) '\(self.track.name, privacy: .private)'")
+            AppLogger.info("Persisted new track \(id) '\(track.name)'", .persistence)
         }
     }
 }

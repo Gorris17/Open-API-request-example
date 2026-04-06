@@ -29,19 +29,19 @@ final class CacheManager: CacheManagerProtocol {
 
     func start() {
         guard task == nil else { return }
-        AppLogger.cache.info("CacheManager started (purge interval: \(self.interval, privacy: .public)s)")
+        AppLogger.info("CacheManager started (purge interval: \(interval)s)", .cache)
         task = Task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(interval))
                 guard !Task.isCancelled else { return }
-                AppLogger.cache.debug("CacheManager triggering purge")
+                AppLogger.debug("CacheManager triggering purge", .cache)
                 cache.purgeExpired()
             }
         }
     }
 
     func stop() {
-        AppLogger.cache.info("CacheManager stopped")
+        AppLogger.info("CacheManager stopped", .cache)
         task?.cancel()
         task = nil
     }
