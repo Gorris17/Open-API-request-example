@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 enum APIError: Error, LocalizedError {
     case invalidURL
@@ -36,18 +37,25 @@ final class APIService: APIServiceProtocol {
 
     func request<T: Decodable>(_ endpoint: any Endpoint) async throws -> T {
         let urlRequest = try endpoint.urlRequest()
+        AppLogger.network.debug("→ \(urlRequest.httpMethod ?? "GET", privacy: .public) \(urlRequest.url?.absoluteString ?? "", privacy: .public)")
+
         let (data, response) = try await session.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            AppLogger.network.error("Invalid response (not HTTPURLResponse)")
             throw APIError.invalidResponse
         }
         guard (200...299).contains(httpResponse.statusCode) else {
+            AppLogger.network.error("HTTP \(httpResponse.statusCode, privacy: .public) from \(urlRequest.url?.absoluteString ?? "", privacy: .public)")
             throw APIError.statusCode(httpResponse.statusCode)
         }
+
+        AppLogger.network.debug("← \(httpResponse.statusCode, privacy: .public) (\(data.count, privacy: .public) bytes)")
 
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
+            AppLogger.network.error("Decoding failed: \(error, privacy: .public)")
             throw APIError.decoding(error)
         }
     }

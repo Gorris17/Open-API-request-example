@@ -15,10 +15,10 @@ final class SearchViewModel {
     var isLoading: Bool = false
     var errorMessage: String? = nil
 
-    private let searchUseCase: SearchTracksUseCaseProtocol
+    private let searchUseCase: SearchTracksServiceProtocol
     private var searchTask: Task<Void, Never>?
 
-    init(searchUseCase: SearchTracksUseCaseProtocol) {
+    init(searchUseCase: SearchTracksServiceProtocol) {
         self.searchUseCase = searchUseCase
     }
 
@@ -33,15 +33,24 @@ final class SearchViewModel {
             return
         }
 
+        AppLogger.search.info("Search started: '\(self.searchText, privacy: .private)'")
         isLoading = true
         searchTask = Task {
             defer { isLoading = false }
             do {
                 let results = try await searchUseCase.execute(query: searchText)
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled else {
+                    AppLogger.search.debug("Search cancelled: '\(self.searchText, privacy: .private)'")
+                    return
+                }
+                AppLogger.search.info("Search '\(self.searchText, privacy: .private)' → \(results.count, privacy: .public) results")
                 tracks = results
             } catch {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled else {
+                    AppLogger.search.debug("Search cancelled: '\(self.searchText, privacy: .private)'")
+                    return
+                }
+                AppLogger.search.error("Search '\(self.searchText, privacy: .private)' failed: \(error, privacy: .public)")
                 errorMessage = error.localizedDescription
             }
         }

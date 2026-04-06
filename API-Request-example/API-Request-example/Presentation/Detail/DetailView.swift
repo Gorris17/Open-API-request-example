@@ -61,12 +61,17 @@ struct DetailView: View {
     // MARK: - Persistence
 
     private func saveRecentTrack() {
-        let entity = RecentTrackEntity(
-            trackId: track.id,
-            trackName: track.name,
-            artistName: track.artist
+        let id = track.id
+        let descriptor = FetchDescriptor<RecentTrackEntity>(
+            predicate: #Predicate { $0.trackId == id }
         )
-        modelContext.insert(entity)
+        if let existing = try? modelContext.fetch(descriptor).first {
+            existing.viewedAt = Date()
+            AppLogger.persistence.debug("Updated viewedAt for track \(id, privacy: .public)")
+        } else {
+            modelContext.insert(RecentTrackEntity(track: track))
+            AppLogger.persistence.info("Persisted new track \(id, privacy: .public) '\(self.track.name, privacy: .private)'")
+        }
     }
 }
 

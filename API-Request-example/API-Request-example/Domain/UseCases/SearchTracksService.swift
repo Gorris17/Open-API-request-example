@@ -1,5 +1,5 @@
 //
-//  SearchTracksUseCase.swift
+//  SearchTracksService.swift
 //  API-Request-example
 //
 //  Created by Fernando Corral on 1/4/26.
@@ -7,14 +7,14 @@
 
 import Foundation
 
-protocol SearchTracksUseCaseProtocol {
+protocol SearchTracksServiceProtocol {
     func execute(query: String) async throws -> [Track]
 }
 
-final class SearchTracksUseCase: SearchTracksUseCaseProtocol {
-    private let repository: TrackRepository
+final class SearchTracksService: SearchTracksServiceProtocol {
+    private let repository: TrackRepositoryProtocol
 
-    init(repository: TrackRepository) {
+    init(repository: TrackRepositoryProtocol) {
         self.repository = repository
     }
 

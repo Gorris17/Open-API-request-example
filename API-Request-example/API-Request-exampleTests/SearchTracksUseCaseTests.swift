@@ -18,8 +18,8 @@ struct SearchTracksUseCaseTests {
               artworkURL: nil, genre: "Pop", releaseYear: "2024", price: nil)
     }
 
-    private func makeSUT(repository: MockTrackRepository) -> SearchTracksUseCase {
-        SearchTracksUseCase(repository: repository)
+    private func makeSUT(repository: MockTrackRepository) -> SearchTracksService {
+        SearchTracksService(repository: repository)
     }
 
     // MARK: - Tests
@@ -80,7 +80,7 @@ struct SearchTracksUseCaseTests {
 
 // MARK: - Mock
 
-final class MockTrackRepository: TrackRepository {
+final class MockTrackRepository: TrackRepositoryProtocol {
     private(set) var searchCallCount = 0
     private(set) var lastQuery: String?
 

@@ -7,20 +7,21 @@
 
 /// Centralised factory that exposes static singleton instances of every service.
 /// Dependencies are wired once at first access (Swift static-let is lazily initialised).
-///
-/// Dependency graph (bottom → top):
-///   APIService + SearchCache → TrackRepositoryImpl → SearchTracksUseCase
+
 enum ServiceFactory {
     static let apiService: APIServiceProtocol = APIService()
 
-    static let searchCache: SearchCacheProtocol = SearchCache()
+    // Stored as the concrete type so CacheManager can call purgeExpired().
+    private static let concreteSearchCache = SearchCache()
+    static let searchCache: SearchCacheProtocol = concreteSearchCache
+    static let cacheManager: CacheManagerProtocol = CacheManager(cache: concreteSearchCache)
 
-    static let trackRepository: TrackRepository = TrackRepositoryImpl(
+    static let trackRepository: TrackRepositoryProtocol = TrackRepository(
         apiService: apiService,
         cache: searchCache
     )
 
-    static let searchTracksUseCase: SearchTracksUseCaseProtocol = SearchTracksUseCase(
+    static let searchTracksService: SearchTracksServiceProtocol = SearchTracksService(
         repository: trackRepository
     )
 }

@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct API_Request_exampleApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([RecentTrackEntity.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -25,5 +27,12 @@ struct API_Request_exampleApp: App {
             SearchView()
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) {
+            switch scenePhase {
+            case .active:     ServiceFactory.cacheManager.start()
+            case .background: ServiceFactory.cacheManager.stop()
+            default:          break
+            }
+        }
     }
 }

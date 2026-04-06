@@ -10,8 +10,10 @@ import SwiftData
 
 struct SearchView: View {
     @State private var viewModel = SearchViewModel(
-        searchUseCase: ServiceFactory.searchTracksUseCase
+        searchUseCase: ServiceFactory.searchTracksService
     )
+
+    @Environment(\.modelContext) private var modelContext
 
     // Recently viewed tracks stored via SwiftData.
     @Query(sort: \RecentTrackEntity.viewedAt, order: .reverse)
@@ -72,13 +74,12 @@ struct SearchView: View {
             List {
                 Section("Recently Viewed") {
                     ForEach(recentTracks) { entity in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entity.trackName)
-                                .font(.subheadline)
-                            Text(entity.artistName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        NavigationLink(value: entity.toDomain()) {
+                            RecentTrackRowView(entity: entity)
                         }
+                    }
+                    .onDelete { indexSet in
+                        indexSet.forEach { modelContext.delete(recentTracks[$0]) }
                     }
                 }
             }
@@ -87,7 +88,43 @@ struct SearchView: View {
     }
 }
 
-// MARK: - Row
+// MARK: - Recent track row
+
+private struct RecentTrackRowView: View {
+    let entity: RecentTrackEntity
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entity.trackName)
+                    .font(.subheadline)
+                Text(entity.artistName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            TimelineView(.periodic(from: .now, by: 60)) { context in
+                Text(relativeTime(from: entity.viewedAt, to: context.date))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .monospacedDigit()
+            }
+        }
+    }
+
+    private func relativeTime(from date: Date, to now: Date) -> String {
+        let seconds = Int(now.timeIntervalSince(date))
+        guard seconds >= 0 else { return "Just now" }
+        if seconds < 60   { return "Just now" }
+        let minutes = seconds / 60
+        if minutes < 60   { return "\(minutes) min ago" }
+        let hours = minutes / 60
+        if hours < 24     { return "\(hours)h ago" }
+        return "\(hours / 24)d ago"
+    }
+}
+
+// MARK: - Search result row
 
 private struct TrackRowView: View {
     let track: Track
