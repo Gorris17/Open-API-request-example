@@ -15,11 +15,11 @@ final class SearchViewModel {
     var isLoading: Bool = false
     var errorMessage: String? = nil
 
-    private let searchUseCase: SearchTracksServiceProtocol
+    private let searchService: SearchTracksServiceProtocol
     private var searchTask: Task<Void, Never>?
 
     init(searchUseCase: SearchTracksServiceProtocol) {
-        self.searchUseCase = searchUseCase
+        self.searchService = searchUseCase
     }
 
     /// Cancels any in-flight search and starts a new one for `searchText`.
@@ -41,7 +41,7 @@ final class SearchViewModel {
             defer { isLoading = false }
             AppLogger.info("Search started: '\(self.searchText)'", .search)
             do {
-                let results = try await searchUseCase.execute(query: searchText)
+                let results = try await searchService.execute(query: searchText)
                 guard !Task.isCancelled else {
                     AppLogger.debug("Search cancelled: '\(self.searchText)'", .search)
                     return

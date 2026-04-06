@@ -5,9 +5,11 @@
 //  Created by Fernando Corral on 1/4/26.
 //
 
+import Foundation
 import Testing
 @testable import API_Request_example
 
+@MainActor
 struct SearchCacheTests {
 
     private func makeTrack(id: Int = 1) -> Track {

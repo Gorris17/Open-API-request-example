@@ -9,6 +9,7 @@ import Foundation
 import Testing
 @testable import API_Request_example
 
+@MainActor
 struct SearchTracksUseCaseTests {
 
     // MARK: - Helpers
